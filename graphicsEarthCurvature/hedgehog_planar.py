@@ -140,15 +140,16 @@ scali = int(20000*scale)
 scalef = scali/10000
 ax.quiverkey(qu1, 1.1, -0.12, scalef*np.pi/180, str(scalef) + ' deg')
 
-xm = [180]
-ym = [0]
-um = [meridian*180/np.pi]
-maxi = (1000*meridian*180/np.pi)
-maxf = maxi/1000
-qu = ax.quiver(xm, ym, um, np.zeros(shape=len(um)), angles='xy', width = 0.002, color='r', )
-qu._init()
-ax.text(xm[0]+meridian*qu.scale, ym[0], s="meridian convergence: {:.3f}".format(maxf), color="r")
-# ax.quiverkey(qu, 0.7, 0.45, maxf*np.pi/180, "{:.3f}".format(maxf) + ' deg mer.conv.')
+meri = meridian*180/np.pi
+if abs(meri) > 0.001:
+    xm = [180]
+    ym = [0]
+    um = [meri]
+    maxi = (1000*meri)
+    maxf = maxi/1000
+    qu = ax.quiver(xm, ym, um, np.zeros(shape=len(um)), angles='xy', width = 0.002, color='r', )
+    qu._init()
+    ax.text(xm[0]+meridian*qu.scale, ym[0], s="meridian convergence: {:.3f}".format(maxf), color="r")
 
 cmap = sns.color_palette("coolwarm", as_cmap=True)
 xg = np.linspace(0, 360, 37)
@@ -194,25 +195,31 @@ x, y, u, v, max = vectors(nd, 0, meridian, 0, 360, -90, 0)
 xv = []
 for a in x:
     xv.append(a/180*np.pi)
+for i, (ax, ay, au, av) in enumerate(zip(xv, y, u, v)):
+    u[i] = av*np.sin(ax) - au*np.cos(ax)
+    v[i] = av*np.cos(ax) + au*np.sin(ax)
 
-qu1 = axn.quiver(xv, y, u, v, angles='xy', width = 0.003)
-qu1._init()
-qu1.scale = scale
+qu3 = axn.quiver(xv, y, u, v, angles='uv', width = 0.003)
+qu3._init()
+qu3.scale = scale
+axn.quiverkey(qu3, 1.1, 0.12, scalef*np.pi/180, str(scalef) + ' deg')
 
-xm = [45, 135, 225, 315]
-ym = [0, 0, 0, 0]
-um, vm = [], []
-for i, a in enumerate(xm):
-    xm[i] = xm[i]/180*np.pi
-for x, y in zip(xm, ym):
-    um.append(meridian*180/np.pi)
-    vm.append(0)
+meri = meridian*180/np.pi
+if abs(meri) > 0.001:
+    xm = [45, 135, 225, 315]
+    ym = [0, 0, 0, 0]
+    um, vm = [], []
+    for i, a in enumerate(xm):
+        xm[i] = xm[i]/180*np.pi
+    for a, b in zip(xm, ym):
+        um.append(meri*np.cos(a))
+        vm.append(-meri*np.sin(a))
 
-maxi = (1000*meridian*180/np.pi)
-maxf = maxi/1000
-qu = axn.quiver(xm, ym, um, np.zeros(shape=len(um)), angles='xy', width = 0.004, color='r', pivot='mid')
-qu._init()
-axn.text(xm[0], ym[0], s="meridian convergence: {:.3f}".format(maxf), color="r")
+    maxi = (1000*meridian*180/np.pi)
+    maxf = maxi/1000
+    qu = axn.quiver(xm, ym, um, vm, angles='uv', width = 0.004, color='r', pivot='mid')
+    qu._init()
+    axn.text(xm[0], ym[0], s="meridian convergence: {:.3f}".format(maxf), color="r")
 
 ####################
 
@@ -228,7 +235,7 @@ azm = np.linspace(0, 2 * np.pi, 37)
 r, th = np.meshgrid(rad, azm)
 
 im = axz.pcolormesh(th, r, zz, alpha=0.4, cmap=cmap, vmin = 0.998, vmax = 1.002)
-# show scale at 0, -90
+# show scale at 0, 90
 for v in [90,0]:
     val = s[(0,v)]
     axz.text(0, v, "{:.5f}".format(val))
@@ -237,24 +244,30 @@ x, y, u, v, max = vectors(nd, 0, meridian, 0, 360, 0, 90)
 xv = []
 for a in x:
     xv.append(a/180*np.pi)
+for i, (ax, ay, au, av) in enumerate(zip(xv, y, u, v)):
+    u[i] = au*np.cos(ax) - av*np.sin(ax)
+    v[i] = au*np.sin(ax) + av*np.cos(ax)
 
-qu1 = axz.quiver(xv, y, u, v, angles='xy', width = 0.003)
-qu1._init()
-qu1.scale = scale
+qu2 = axz.quiver(xv, y, u, v, angles='uv', width = 0.003)
+qu2._init()
+qu2.scale = scale
+# axz.quiverkey(qu2, 1.1, 0.12, scalef*np.pi/180, str(scalef) + ' deg')
 
-xm = [45, 135, 225, 315]
-ym = [0, 0, 0, 0]
-um, vm = [], []
-for i, a in enumerate(xm):
-    xm[i] = xm[i]/180*np.pi
-for x, y in zip(xm, ym):
-    um.append(meridian*180/np.pi)
-    vm.append(0)
+meri = meridian*180/np.pi
+if abs(meri) > 0.001:
+    xm = [45, 135, 225, 315]
+    ym = [0, 0, 0, 0]
+    um, vm = [], []
+    for i, a in enumerate(xm):
+        xm[i] = xm[i]*np.pi/180
+    for a, b in zip(xm, ym):
+        um.append(meri*np.cos(a))
+        vm.append(meri*np.sin(a))
 
-maxi = (1000*meridian*180/np.pi)
-maxf = maxi/1000
-qu = axz.quiver(xm, ym, um, np.zeros(shape=len(um)), angles='xy', width = 0.004, color='r', pivot='mid')
-qu._init()
+    maxi = (1000*meridian*180/np.pi)
+    maxf = maxi/1000
+    qu = axz.quiver(xm, ym, um, vm, angles='uv', width = 0.004, color='r', pivot='mid')
+    qu._init()
 # axz.text(xm[0], ym[0], s="meridian convergence: {:.3f}".format(maxf), color="r")
 
 
@@ -262,4 +275,4 @@ qu._init()
 plt.tight_layout()
 plt.show()
 
-print("")
+print(" ")
