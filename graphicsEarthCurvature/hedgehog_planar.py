@@ -41,10 +41,10 @@ def vectors(df, stride, meridian, xmin, xmax, ymin, ymax):
         if plot:
             ang_xy = np.arctan2(u, v)
             ang_xy1 = np.arctan2(u1, v1)
-            if abs(v) > 1.e-15 and abs(v1) > 1.e-15:
-                dxy = ang_xy1-ang_xy + meridian
-            else:
-                dxy = 0
+            # if abs(v) > 1.e-15 and abs(v1) > 1.e-15:
+            dxy = ang_xy1-ang_xy + meridian
+            # else:
+            #     dxy = 0
             if dxy > np.pi:
                 dxy -= 2*np.pi
             if dxy < -np.pi:
@@ -213,6 +213,49 @@ maxf = maxi/1000
 qu = axn.quiver(xm, ym, um, np.zeros(shape=len(um)), angles='xy', width = 0.004, color='r', pivot='mid')
 qu._init()
 axn.text(xm[0], ym[0], s="meridian convergence: {:.3f}".format(maxf), color="r")
+
+####################
+
+xg = np.linspace(0, 360, 37)
+yg = np.linspace(0, 90, 10)
+x, y, z, s = filterValues(xg, yg, sc)
+xx = np.array(x).reshape(37,10)
+yy = np.array(y).reshape(37,10)
+zz = np.array(z).reshape(37,10)
+
+rad = np.linspace(0, 90, 10)
+azm = np.linspace(0, 2 * np.pi, 37)
+r, th = np.meshgrid(rad, azm)
+
+im = axz.pcolormesh(th, r, zz, alpha=0.4, cmap=cmap, vmin = 0.998, vmax = 1.002)
+# show scale at 0, -90
+for v in [90,0]:
+    val = s[(0,v)]
+    axz.text(0, v, "{:.5f}".format(val))
+
+x, y, u, v, max = vectors(nd, 0, meridian, 0, 360, 0, 90)
+xv = []
+for a in x:
+    xv.append(a/180*np.pi)
+
+qu1 = axz.quiver(xv, y, u, v, angles='xy', width = 0.003)
+qu1._init()
+qu1.scale = scale
+
+xm = [45, 135, 225, 315]
+ym = [0, 0, 0, 0]
+um, vm = [], []
+for i, a in enumerate(xm):
+    xm[i] = xm[i]/180*np.pi
+for x, y in zip(xm, ym):
+    um.append(meridian*180/np.pi)
+    vm.append(0)
+
+maxi = (1000*meridian*180/np.pi)
+maxf = maxi/1000
+qu = axz.quiver(xm, ym, um, np.zeros(shape=len(um)), angles='xy', width = 0.004, color='r', pivot='mid')
+qu._init()
+# axz.text(xm[0], ym[0], s="meridian convergence: {:.3f}".format(maxf), color="r")
 
 
 
